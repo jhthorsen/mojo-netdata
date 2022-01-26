@@ -3,6 +3,8 @@ use Mojo::Base -base, -signatures;
 
 use Mojo::File qw(path);
 
+our $VERSION = '0.01';
+
 has collectors      => sub ($self) { $self->_build_collectors };
 has config          => sub ($self) { $self->_build_config };
 has user_config_dir => sub ($self) { path $ENV{NETDATA_USER_CONFIG_DIR} || '/etc/netdata' };
