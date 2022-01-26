@@ -104,7 +104,7 @@ L<Mojo::Netdata::Chart/type>.
 
 =head2 update_every
 
-  $int = $chart->update_every;
+  $num = $chart->update_every;
 
 Used by L</recurring_update_p> to figure out how often to update Netdata.
 

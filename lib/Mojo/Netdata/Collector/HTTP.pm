@@ -2,19 +2,23 @@ package Mojo::Netdata::Collector::HTTP;
 use Mojo::Base 'Mojo::Netdata::Collector', -signatures;
 
 use Mojo::UserAgent;
-use Mojo::Netdata::Util qw(logf safe_id);
+use Mojo::Netdata::Util qw(logf);
 use Time::HiRes qw(time);
 
-has context => 'web';
-has type    => 'http';
-has ua      => sub { Mojo::UserAgent->new; };
-has _jobs   => sub ($self) { +[] };
+has context      => 'web';
+has type         => 'http';
+has ua           => sub { Mojo::UserAgent->new; };
+has update_every => 30;
+has _jobs        => sub ($self) { +[] };
 
 sub register ($self, $config, $netdata) {
-  $self->_add_jobs_for_site($_) for @{$config->{sites}};
-  return undef unless @{$self->_jobs};
+      $config->{update_every}      ? $self->update_every($config->{update_every})
+    : $netdata->update_every >= 10 ? $self->update_every($netdata->update_every)
+    :                                $self->update_every(30);
+
   $self->ua->proxy->detect;
-  return $self;
+  $self->_add_jobs_for_site($_ => $config->{jobs}{$_}) for sort keys %{$config->{jobs}};
+  return @{$self->_jobs} ? $self : undef;
 }
 
 sub update_p ($self) {
@@ -22,35 +26,38 @@ sub update_p ($self) {
 
   my $t0 = time;
   for my $job (@{$self->_jobs}) {
-    my $id     = $job->[0];
-    my $charts = $job->[1];
-    push @p, $ua->start_p($ua->build_tx(@{$job->[2]}))->then(sub ($tx) {
-      logf(info => '%s %s == %s', $job->[2][0], $job->[2][1], $tx->res->code);
-      $charts->{code}->dimension($id => {value => $tx->res->code});
-      $charts->{time}->dimension($id => {value => int(1000 * (time - $t0))});
-    })->catch(sub ($err) {
-      logf(warnings => '%s %s == %s', $job->[2][0], $job->[2][1], $err);
-      $charts->{code}->dimension($id => {value => 0});
-      $charts->{time}->dimension($id => {value => int(1000 * (time - $t0))});
+    my $dimension_id = $job->[0];
+    my $charts       = $job->[1];
+    my $tx           = $ua->build_tx(@{$job->[2]});
+    push @p, $ua->start_p($tx)->catch(
+      sub ($err, @) {
+        logf(warnings => '%s %s == %s', $tx->req->method, $tx->req->url, $err);
+        return $tx;
+      }
+    )->then(sub ($tx) {
+      logf(info => '%s %s == %s', $tx->req->method, $tx->req->url, $tx->res->code)
+        if $tx->res->code;
+      $charts->{code}->dimension($dimension_id => {value => $tx->res->code // 0});
+      $charts->{time}->dimension($dimension_id => {value => int(1000 * (time - $t0))});
     });
   }
 
   return Mojo::Promise->all(@p);
 }
 
-sub _add_jobs_for_site ($self, $site) {
-  my $url = Mojo::URL->new($site->{url} // '');
+sub _add_jobs_for_site ($self, $url, $site) {
+  $url = Mojo::URL->new($url);
   return unless my $host = $url->host;
 
+  my $group   = $site->{group}  || $site->{direct_ip} || $url =~ s!https?://!!r;
   my $method  = $site->{method} || 'GET';
   my %headers = %{$site->{headers} || {}};
-  my $id      = safe_id $url =~ s!https?://!!r;
   my %charts;
 
-  $charts{code} = $self->chart("${id}_code")->title("Status code from $host")->units('#')
-    ->dimension(url => {name => $host})->family($host);
-  $charts{time} = $self->chart("${id}_time")->title("Response time for $host")->units('ms')
-    ->dimension(url => {name => $host})->family($host);
+  $charts{code} = $self->chart("${group}_code")->title("HTTP Status code for $group")->units('#')
+    ->dimension($host => {})->family($site->{direct_ip} || $host);
+  $charts{time} = $self->chart("${group}_time")->title("Response time for $group")->units('ms')
+    ->dimension($host => {})->family($site->{direct_ip} || $host);
 
   my @body
     = exists $site->{json} ? (json => $site->{json})
@@ -58,14 +65,15 @@ sub _add_jobs_for_site ($self, $site) {
     : exists $site->{body} ? ($site->{body})
     :                        ();
 
-  push @{$self->_jobs}, ['url', \%charts, [$method => "$url", {%headers}, @body]];
+  push @{$self->_jobs}, [$host, \%charts, [$method => "$url", {%headers}, @body]];
 
   if ($site->{direct_ip}) {
-    $charts{code}->dimension(direct_ip => {name => $site->{direct_ip}});
-    $charts{time}->dimension(direct_ip => {name => $site->{direct_ip}});
+    $charts{code}->dimension("${host} direct" => {});
+    $charts{time}->dimension("${host} direct" => {});
     $headers{Host} = $host;
     my $direct_url = $url->clone->host($site->{direct_ip});
-    push @{$self->_jobs}, ['direct_ip', \%charts, [$method => "$direct_url", {%headers}, @body]];
+    push @{$self->_jobs},
+      ["${host} direct", \%charts, [$method => "$direct_url", {%headers}, @body]];
   }
 
   logf(info => 'Tracking %s', $url);
@@ -81,8 +89,39 @@ Mojo::Netdata::Collector::HTTP - A HTTP collector for Mojo::Netdata
 
 =head1 SYNOPSIS
 
-  my $collector = Mojo::Netdata::Collector::HTTP->new;
-  $collector->register(\%config, $netdata);
+Supported variant of L<Mojo::Netdata/config>:
+
+  {
+    collectors => [
+      {
+        # It is possible to load this collector multiple times
+        class        => 'Mojo::Netdata::Collector::HTTP',
+        update_every => 30,
+        jobs         => {
+          # The key is the URL to request
+          'https://example.com' => {
+
+            # Optional
+            method => 'GET',               # GET (Default), HEAD, POST, ...
+            headers => {'X-Foo' => 'bar'}, # HTTP headers
+
+            # Set this to also send the request directly to an IP,
+            # with the "Host" headers set to the host part of "url".
+            direct_ip => '192.0.2.42',
+
+            # Set "group" to group multiple domains together in one chart,
+            # Default value is either "direct_ip" or the host part of the URL.
+            group  => 'test',
+
+            # Only one of these can be present
+            json   => {...},           # JSON HTTP body
+            form   => {key => $value}, # Form data
+            body   => '...',           # Raw HTTP body
+          },
+        },
+      },
+    ],
+  }
 
 =head1 DESCRIPTION
 
@@ -109,19 +148,28 @@ Defaults to "http".
 
 Holds a L<Mojo::UserAgent>.
 
+=head2 update_every
+
+  $num = $chart->update_every;
+
+Default value is 30. See L<Mojo::Netdata::Collector/update_every> for more
+details.
+
 =head1 METHODS
 
 =head2 register
 
   $collector = $collector->register(\%config, $netdata);
 
-Returns a L<$collector> object, if any "sites" are defined in C<%config>.
+Returns a L<$collector> object if any "jobs" are defined in C<%config>. Will
+also set L</update_every> from C<%config> or use L<Mojo::Netdata/update_every>
+if it is 10 or greater.
 
 =head2 update_p
 
   $p = $collector->update_p;
 
-Gathers information about the "sites" registered.
+Gathers information about the "jobs" registered.
 
 =head1 SEE ALSO
 

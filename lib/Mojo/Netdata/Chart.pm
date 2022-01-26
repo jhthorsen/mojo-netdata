@@ -160,7 +160,9 @@ Defaults to "#".
 
 =head2 update_every
 
-  $int = $chart->update_every;
+  $num = $chart->update_every;
+
+How often to update Netdata.
 
 =head1 METHODS
 

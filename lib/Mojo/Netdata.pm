@@ -58,8 +58,7 @@ sub _build_collectors ($self) {
       next;
     }
 
-    my %attrs = (update_every => $collector_config->{update_every} || $self->update_every);
-    next unless my $collector = $collector_class->new(%attrs)->register($collector_config, $self);
+    next unless my $collector = $collector_class->new->register($collector_config, $self);
     $collector->on(stdout => sub ($collector, $str) { print {$fh} $str });
     logf(info => 'Loaded and set up %s', $collector_class);
     push @collectors, $collector;
@@ -78,11 +77,11 @@ Mojo::Netdata - https://netdata.cloud plugin for Perl
 
 =head1 SYNOPSIS
 
-=head2 CONFIG FILE
+=head2 Config file
 
-TODO
+See L<Mojo::Netdata::Collector::HTTP/SYNOPSIS> for an example config file.
 
-=head2 INSTALLATION
+=head2 Installation
 
 TODO
 
@@ -160,7 +159,7 @@ for more details.
 
 =head2 update_every
 
-  $seconds = $netdata->update_every;
+  $num = $netdata->update_every;
 
 Defaults to the C<NETDATA_UPDATE_EVERY> environment variable. See
 L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
