@@ -1,0 +1,186 @@
+package Mojo::Netdata;
+use Mojo::Base -base, -signatures;
+
+use Mojo::File qw(path);
+
+has collectors      => sub ($self) { +[] };
+has user_config_dir => sub ($self) { path $ENV{NETDATA_USER_CONFIG_DIR} || '/etc/netdata' };
+has stock_config_dir =>
+  sub ($self) { path $ENV{NETDATA_STOCK_CONFIG_DIR} || '/usr/lib/netdata/conf.d' };
+has plugins_dir  => sub ($self) { path $ENV{NETDATA_PLUGINS_DIR} || '' };
+has web_dir      => sub ($self) { path $ENV{NETDATA_WEB_DIR}     || '' };
+has cache_dir    => sub ($self) { path $ENV{NETDATA_CACHE_DIR}   || '' };
+has log_dir      => sub ($self) { path $ENV{NETDATA_LOG_DIR}     || '' };
+has host_prefix  => sub ($self) { $ENV{NETDATA_HOST_PREFIX}      || '' };
+has debug_flags  => sub ($self) { $ENV{NETDATA_DEBUG_FLAGS}      || '' };
+has stdout       => sub ($self) { \*STDOUT };
+has update_every => sub ($self) { $ENV{NETDATA_UPDATE_EVERY} || '' };
+
+sub read_config ($self) {
+  my $config = {};    # TODO
+
+  my %attrs = (stdout => $self->stdout);
+  for my $collector_config (@{$config->{collectors} || []}) {
+    next unless my $collector_class = $collector_config->{class};
+    next unless $collector_class =~ m!^[\w:]+$!;
+    next unless eval "require $collector_class;1";
+
+    $attrs{update_every} = $collector_config->{update_every} || $self->update_every;
+    next unless my $collector = $collector_class->new(%attrs)->register($collector_config, $self);
+    push @{$self->collectors}, $collector;
+  }
+
+  return $self;
+}
+
+sub run ($self) {
+  $self->read_config;
+  return print {$self->stdout} "DISABLE\n" unless @{$self->collectors};
+  $_->print_charts for @{$self->collectors};
+  Mojo::IOLoop->start;
+}
+
+1;
+
+=encoding utf8
+
+=head1 NAME
+
+Mojo::Netdata - https://netdata.cloud plugin for Perl
+
+=head1 SYNOPSIS
+
+=head2 CONFIG FILE
+
+TODO
+
+=head2 INSTALLATION
+
+TODO
+
+=head1 DESCRIPTION
+
+L<Mojo::Netdata> is a plugin for
+L<Netdata|https://learn.netdata.cloud/docs/agent/collectors/plugins.d>. It can
+load custom L<Mojo::Netdata::Collector> classes and write data back to Netdata
+on a given interval.
+
+=head1 ATTRIBUTES
+
+=head2 cache_dir
+
+  $path = $netdata->cache_dir;
+
+Holds a L<Mojo::File> pointing to the C<NETDATA_CACHE_DIR> environment
+variable. See L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
+for more details.
+
+=head2 collectors
+
+  $array_ref = $netdata->collectors;
+
+An array-ref of L<Mojo::Netdata::Collector> objects.
+
+=head2 debug_flags
+
+  $str = $netdata->debug_flags;
+
+Defaults to the C<NETDATA_DEBUG_FLAGS> environment variable. See
+L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
+for more details.
+
+=head2 host_prefix
+
+  $str = $netdata->host_prefix;
+
+Defaults to the C<NETDATA_HOST_PREFIX> environment variable. See
+L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
+for more details.
+
+=head2 log_dir
+
+  $path = $netdata->log_dir;
+
+Holds a L<Mojo::File> pointing to the C<NETDATA_LOG_DIR> environment
+variable. See L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
+for more details.
+
+=head2 plugins_dir
+
+  $path = $netdata->plugins_dir;
+
+Holds a L<Mojo::File> pointing to the C<NETDATA_PLUGINS_DIR> environment
+variable. See L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
+for more details.
+
+=head2 stdout
+
+  $fh = $netdata->stdout;
+
+Holds a filehandle that will be written to. Default to STDOUT, but can be
+changed for easier testing.
+
+=head2 stock_config_dir
+
+  $path = $netdata->stock_config_dir;
+
+Holds a L<Mojo::File> pointing to the C<NETDATA_STOCK_CONFIG_DIR> environment
+variable. See L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
+for more details.
+
+=head2 update_every
+
+  $seconds = $netdata->update_every;
+
+Defaults to the C<NETDATA_UPDATE_EVERY> environment variable. See
+L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
+for more details.
+
+=head2 user_config_dir
+
+  $path = $netdata->user_config_dir;
+
+Holds a L<Mojo::File> pointing to the C<NETDATA_USER_CONFIG_DIR> environment
+variable. See L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
+for more details.
+
+=head2 web_dir
+
+  $path = $netdata->web_dir;
+
+Holds a L<Mojo::File> pointing to the C<NETDATA_WEB_DIR> environment
+variable. See L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
+for more details.
+
+=head1 METHODS
+
+=head2 read_config
+
+  $netdata = $netdata->read_config;
+
+Reads the config file and sets up L</collectors>.
+
+=head2 run
+
+  $netdata->run;
+
+Reads the L<config|/read_config> and starts L<Mojo::IOLoop> if any
+L</collectors> got registered. Prints "DISABLE" to L</stdout> and returns right
+away if no collectors was set up.
+
+=head1 AUTHOR
+
+Jan Henning Thorsen
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) Jan Henning Thorsen
+
+This program is free software, you can redistribute it and/or modify it under
+the terms of the Artistic License version 2.0.
+
+=head1 SEE ALSO
+
+L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d>.
+
+=cut
