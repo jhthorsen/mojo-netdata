@@ -68,3 +68,59 @@ sub _add_jobs_for_site ($self, $site) {
 }
 
 1;
+
+=encoding utf8
+
+=head1 NAME
+
+Mojo::Netdata::Collector::HTTP - A HTTP collector for Mojo::Netdata
+
+=head1 SYNOPSIS
+
+  my $collector = Mojo::Netdata::Collector::HTTP->new;
+  $collector->register(\%config, $netdata);
+
+=head1 DESCRIPTION
+
+L<Mojo::Netdata::Collector::HTTP> is a collector that can chart a web page
+response time and HTTP status codes.
+
+=head1 ATTRIBUTES
+
+=head2 context
+
+  $str = $collector->context;
+
+Defaults to "web".
+
+=head2 type
+
+  $str = $collector->type;
+
+Defaults to "http".
+
+=head2 ua
+
+  $ua = $collector->ua;
+
+Holds a L<Mojo::UserAgent>.
+
+=head1 METHODS
+
+=head2 register
+
+  $collector = $collector->register(\%config, $netdata);
+
+Returns a L<$collector> object, if any "sites" are defined in C<%config>.
+
+=head2 update_p
+
+  $p = $collector->update_p;
+
+Gathers information about the "sites" registered.
+
+=head1 SEE ALSO
+
+L<Mojo::Netdata> and L<Mojo::Netdata::Collector>.
+
+=cut
