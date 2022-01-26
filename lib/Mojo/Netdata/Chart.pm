@@ -27,6 +27,13 @@ sub data_to_string ($self, $microseconds = undef) {
     ($microseconds ? " $microseconds" : ""), $set;
 }
 
+sub dimension ($self, $id, $attrs = undef) {
+  return $self->dimensions->{$id} unless $attrs;
+  my $dimension = $self->dimensions->{$id} //= {};
+  @$dimension{keys(%$attrs)} = values %$attrs;
+  return $self;
+}
+
 sub to_string ($self) {
   my $dimensions = $self->dimensions;
   return '' unless %$dimensions;

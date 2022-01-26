@@ -8,21 +8,27 @@ use Time::HiRes qw(time);
 
 has charts       => sub ($self) { +{} };
 has context      => 'default';
+has module       => sub ($self) { lc(ref $self) =~ s!\W+!_!gr };
 has type         => sub ($self) { croak '"type" cannot be built' };
 has update_every => 1;
 
 sub chart ($self, $id) {
-  return $self->charts->{$id}
-    //= Mojo::Netdata::Chart->new(context => $self->context, id => $id, type => $self->type);
+  return $self->charts->{$id} //= Mojo::Netdata::Chart->new(
+    context => $self->context,
+    module  => $self->module,
+    id      => $id,
+    type    => $self->type,
+  );
 }
 
 sub recurring_update_p ($self) {
   my $next_time = time + $self->update_every;
 
-  return $self->update_p->then(sub {
+  return $self->{recurring_update_p} //= $self->update_p->then(sub {
     $self->emit_data;
     return Mojo::Promise->timer($next_time - time);
   })->then(sub {
+    delete $self->{recurring_update_p};
     return $self->recurring_update_p;
   });
 }

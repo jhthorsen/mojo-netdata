@@ -3,7 +3,8 @@ use Mojo::Base -base, -signatures;
 
 use Mojo::File qw(path);
 
-has collectors      => sub ($self) { +[] };
+has collectors      => sub ($self) { $self->_build_collectors };
+has config          => sub ($self) { $self->_build_config };
 has user_config_dir => sub ($self) { path $ENV{NETDATA_USER_CONFIG_DIR} || '/etc/netdata' };
 has stock_config_dir =>
   sub ($self) { path $ENV{NETDATA_STOCK_CONFIG_DIR} || '/usr/lib/netdata/conf.d' };
@@ -13,31 +14,34 @@ has cache_dir    => sub ($self) { path $ENV{NETDATA_CACHE_DIR}   || '' };
 has log_dir      => sub ($self) { path $ENV{NETDATA_LOG_DIR}     || '' };
 has host_prefix  => sub ($self) { $ENV{NETDATA_HOST_PREFIX}      || '' };
 has debug_flags  => sub ($self) { $ENV{NETDATA_DEBUG_FLAGS}      || '' };
-has stdout       => sub ($self) { \*STDOUT };
-has update_every => sub ($self) { $ENV{NETDATA_UPDATE_EVERY} || '' };
+has update_every => sub ($self) { $ENV{NETDATA_UPDATE_EVERY}     || 1 };
 
-sub read_config ($self) {
-  my $config = {};    # TODO
+sub start ($self) {
+  return 0 unless @{$self->collectors};
+  $_->emit_charts->recurring_update_p for @{$self->collectors};
+  return int @{$self->collectors};
+}
 
-  my %attrs = (stdout => $self->stdout);
-  for my $collector_config (@{$config->{collectors} || []}) {
+sub _build_config {
+  return {};    # TODO
+}
+
+sub _build_collectors ($self) {
+  my $fh = $self->{stdout} // \*STDOUT;    # for testing
+  my @collectors;
+
+  for my $collector_config (@{$self->config->{collectors} || []}) {
     next unless my $collector_class = $collector_config->{class};
     next unless $collector_class =~ m!^[\w:]+$!;
     next unless eval "require $collector_class;1";
 
-    $attrs{update_every} = $collector_config->{update_every} || $self->update_every;
+    my %attrs = (update_every => $collector_config->{update_every} || $self->update_every);
     next unless my $collector = $collector_class->new(%attrs)->register($collector_config, $self);
-    push @{$self->collectors}, $collector;
+    $collector->on(stdout => sub ($collector, $str) { print {$fh} $str });
+    push @collectors, $collector;
   }
 
-  return $self;
-}
-
-sub run ($self) {
-  $self->read_config;
-  return print {$self->stdout} "DISABLE\n" unless @{$self->collectors};
-  $_->print_charts for @{$self->collectors};
-  Mojo::IOLoop->start;
+  return \@collectors;
 }
 
 1;
@@ -74,6 +78,12 @@ on a given interval.
 Holds a L<Mojo::File> pointing to the C<NETDATA_CACHE_DIR> environment
 variable. See L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
 for more details.
+
+=head2 config
+
+  $hash_ref = $netdata->config;
+
+Holds the config for L<Mojo::Netdata> and all L</collectors>.
 
 =head2 collectors
 
@@ -113,13 +123,6 @@ Holds a L<Mojo::File> pointing to the C<NETDATA_PLUGINS_DIR> environment
 variable. See L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
 for more details.
 
-=head2 stdout
-
-  $fh = $netdata->stdout;
-
-Holds a filehandle that will be written to. Default to STDOUT, but can be
-changed for easier testing.
-
 =head2 stock_config_dir
 
   $path = $netdata->stock_config_dir;
@@ -154,19 +157,11 @@ for more details.
 
 =head1 METHODS
 
-=head2 read_config
+=head2 start
 
-  $netdata = $netdata->read_config;
+  $bool = $netdata->start;
 
-Reads the config file and sets up L</collectors>.
-
-=head2 run
-
-  $netdata->run;
-
-Reads the L<config|/read_config> and starts L<Mojo::IOLoop> if any
-L</collectors> got registered. Prints "DISABLE" to L</stdout> and returns right
-away if no collectors was set up.
+Reads the L</config> and return 1 if any L</collectors> got registered.
 
 =head1 AUTHOR
 
