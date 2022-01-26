@@ -1,6 +1,7 @@
 package Mojo::Netdata;
 use Mojo::Base -base, -signatures;
 
+use Mojo::Netdata::Util qw(logf);
 use Mojo::File qw(path);
 
 our $VERSION = '0.01';
@@ -19,6 +20,7 @@ has debug_flags  => sub ($self) { $ENV{NETDATA_DEBUG_FLAGS}      || '' };
 has update_every => sub ($self) { $ENV{NETDATA_UPDATE_EVERY}     || 1 };
 
 sub start ($self) {
+  logf(info => 'Starting %s', __PACKAGE__);
   return 0 unless @{$self->collectors};
   $_->emit_charts->recurring_update_p for @{$self->collectors};
   return int @{$self->collectors};
@@ -32,14 +34,23 @@ sub _build_collectors ($self) {
   my $fh = $self->{stdout} // \*STDOUT;    # for testing
   my @collectors;
 
+  local $@;
   for my $collector_config (@{$self->config->{collectors} || []}) {
-    next unless my $collector_class = $collector_config->{class};
-    next unless $collector_class =~ m!^[\w:]+$!;
-    next unless eval "require $collector_class;1";
+    my $collector_class = $collector_config->{class};
+
+    unless ($collector_class and $collector_class =~ m!^[\w:]+$!) {
+      logf(error => 'Invalid collector_class %s', $collector_class || 'missing');
+      next;
+    }
+    unless (eval "require $collector_class;1") {
+      logf(error => 'Load %s FAIL %s', $collector_class, $@);
+      next;
+    }
 
     my %attrs = (update_every => $collector_config->{update_every} || $self->update_every);
     next unless my $collector = $collector_class->new(%attrs)->register($collector_config, $self);
     $collector->on(stdout => sub ($collector, $str) { print {$fh} $str });
+    logf(info => 'Loaded and set up %s', $collector_class);
     push @collectors, $collector;
   }
 

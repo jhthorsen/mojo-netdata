@@ -2,7 +2,7 @@ package Mojo::Netdata::Collector::HTTP;
 use Mojo::Base 'Mojo::Netdata::Collector', -signatures;
 
 use Mojo::UserAgent;
-use Mojo::Netdata::Util qw(safe_id);
+use Mojo::Netdata::Util qw(logf safe_id);
 use Time::HiRes qw(time);
 
 has context => 'web';
@@ -25,9 +25,11 @@ sub update_p ($self) {
     my $id     = $job->[0];
     my $charts = $job->[1];
     push @p, $ua->start_p($ua->build_tx(@{$job->[2]}))->then(sub ($tx) {
+      logf(info => '%s %s == %s', $job->[2][0], $job->[2][1], $tx->res->code);
       $charts->{code}->dimension($id => {value => $tx->res->code});
       $charts->{time}->dimension($id => {value => int(1000 * (time - $t0))});
     })->catch(sub ($err) {
+      logf(warnings => '%s %s == %s', $job->[2][0], $job->[2][1], $err);
       $charts->{code}->dimension($id => {value => 0});
       $charts->{time}->dimension($id => {value => int(1000 * (time - $t0))});
     });
@@ -65,6 +67,8 @@ sub _add_jobs_for_site ($self, $site) {
     my $direct_url = $url->clone->host($site->{direct_ip});
     push @{$self->_jobs}, ['direct_ip', \%charts, [$method => "$direct_url", {%headers}, @body]];
   }
+
+  logf(info => 'Tracking %s', $url);
 }
 
 1;

@@ -3,6 +3,7 @@ use Mojo::Base 'Mojo::EventEmitter', -signatures;
 
 use Carp qw(croak);
 use Mojo::Netdata::Chart;
+use Mojo::Netdata::Util qw(logf);
 use Mojo::Promise;
 use Time::HiRes qw(time);
 
@@ -26,6 +27,7 @@ sub recurring_update_p ($self) {
 
   return $self->{recurring_update_p} //= $self->update_p->then(sub {
     $self->emit_data;
+    logf(debug => 'Will update in %0.3fs...', $next_time - time);
     return Mojo::Promise->timer($next_time - time);
   })->then(sub {
     delete $self->{recurring_update_p};
@@ -144,7 +146,7 @@ success or C<undef> if the collector should I<not> be registered.
   $p = $collector->update_p;
 
 Must be defined in the sub class. This method should update
-L<Mojo::Netdata::Chart/dimensions>
+L<Mojo::Netdata::Chart/dimensions>.
 
 =head1 SEE ALSO
 
