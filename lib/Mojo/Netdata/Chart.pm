@@ -2,6 +2,7 @@ package Mojo::Netdata::Chart;
 use Mojo::Base -base, -signatures;
 
 use Carp qw(croak);
+use Mojo::Netdata::Util qw(safe_id);
 
 has chart_type   => 'line';
 has context      => 'default';
@@ -23,13 +24,14 @@ sub data_to_string ($self, $microseconds = undef) {
   my $set        = join "\n",
     map { sprintf "SET %s = %s", $_, $dimensions->{$_}{value} // '' } sort keys %$dimensions;
 
-  return !$set ? '' : sprintf "BEGIN %s.%s%s\n%s\nEND\n", $self->type, $self->id,
+  return !$set ? '' : sprintf "BEGIN %s.%s%s\n%s\nEND\n", safe_id($self->type), safe_id($self->id),
     ($microseconds ? " $microseconds" : ""), $set;
 }
 
-sub dimension ($self, $id, $attrs = undef) {
+sub dimension ($self, $name, $attrs = undef) {
+  my $id = safe_id $name;
   return $self->dimensions->{$id} unless $attrs;
-  my $dimension = $self->dimensions->{$id} //= {};
+  my $dimension = $self->dimensions->{$id} //= {name => $name};
   @$dimension{keys(%$attrs)} = values %$attrs;
   return $self;
 }
@@ -38,7 +40,7 @@ sub to_string ($self) {
   my $dimensions = $self->dimensions;
   return '' unless %$dimensions;
 
-  my $str = sprintf "CHART %s.%s %s\n", $self->type, $self->id,
+  my $str = sprintf "CHART %s.%s %s\n", safe_id($self->type), safe_id($self->id),
     q('name' 'title' 'units' family context chart_type priority update_every 'options' 'plugin' 'module')
     =~ s!([a-z_]+)!{$self->$1}!ger;
 

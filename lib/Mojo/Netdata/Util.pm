@@ -56,6 +56,11 @@ Used to log messages to STDERR. C<$level> can be "debug", "info", "warnings",
 
   $str = safe_id $str;
 
+Turns an "unsafe" string into a string you can use for things like "id" or
+"type". This is called by L<Mojo::Netdata::Chart/to_string> and
+L<Mojo::Netdata::Chart/data_to_string> to make sure the output strings are
+safe.
+
 =head1 SEE ALSO
 
 L<Mojo::Netdata>.

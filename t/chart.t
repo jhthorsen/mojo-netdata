@@ -35,7 +35,7 @@ subtest 'basics' => sub {
 };
 
 subtest 'to_string' => sub {
-  my $chart = Mojo::Netdata::Chart->new(id => 'foo', module => 'm1', type => 'bar');
+  my $chart = Mojo::Netdata::Chart->new(id => 'f o o', module => 'm1', type => 'bar');
   is $chart->to_string, '', 'without any dimensions';
 
   $chart->dimensions({
@@ -43,7 +43,7 @@ subtest 'to_string' => sub {
     b => {algorithm => 'incremental', name => 'B', divisor => 2, multiplier => 3, options => 'x y'}
   });
   is $chart->to_string, <<'HERE', 'with dimensions';
-CHART bar.foo '' 'foo' '#' foo default line 1000 1 '' 'mojo' 'm1'
+CHART bar.f_o_o '' 'f o o' '#' f o o default line 1000 1 '' 'mojo' 'm1'
 DIMENSION a 'a' absolute 1 1 ''
 DIMENSION b 'B' incremental 3 2 'x y'
 HERE
@@ -52,8 +52,12 @@ HERE
 subtest 'data_to_string' => sub {
   my $chart = Mojo::Netdata::Chart->new(dimensions => {x => {}}, id => 'foo', type => 'bar');
 
+  is $chart->dimension('Un Safe' => {value => 0}), exact_ref($chart), 'dimension set';
+  is $chart->dimension('un SAFe'), {name => 'Un Safe', value => 0}, 'dimension get';
+
   is $chart->data_to_string, <<'HERE', 'no value';
 BEGIN bar.foo
+SET un_safe = 0
 SET x = 
 END
 HERE
@@ -61,6 +65,7 @@ HERE
   $chart->dimensions->{x}{value} = 42;
   is $chart->data_to_string, <<'HERE', 'with value';
 BEGIN bar.foo
+SET un_safe = 0
 SET x = 42
 END
 HERE
@@ -68,6 +73,7 @@ HERE
   $chart->dimensions->{x}{value} = 0;
   is $chart->data_to_string(1002), <<'HERE', 'with microseconds';
 BEGIN bar.foo 1002
+SET un_safe = 0
 SET x = 0
 END
 HERE
