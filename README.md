@@ -19,6 +19,9 @@ TODO
 load custom [Mojo::Netdata::Collector](https://metacpan.org/pod/Mojo%3A%3ANetdata%3A%3ACollector) classes and write data back to Netdata
 on a given interval.
 
+This module is currently EXPERIMENTAL, and the API might change without
+warning.
+
 # ATTRIBUTES
 
 ## cache\_dir
@@ -28,6 +31,12 @@ on a given interval.
 Holds a [Mojo::File](https://metacpan.org/pod/Mojo%3A%3AFile) pointing to the `NETDATA_CACHE_DIR` environment
 variable. See [https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables](https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables)
 for more details.
+
+## config
+
+    $hash_ref = $netdata->config;
+
+Holds the config for [Mojo::Netdata](https://metacpan.org/pod/Mojo%3A%3ANetdata) and all ["collectors"](#collectors).
 
 ## collectors
 
@@ -67,13 +76,6 @@ Holds a [Mojo::File](https://metacpan.org/pod/Mojo%3A%3AFile) pointing to the `N
 variable. See [https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables](https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables)
 for more details.
 
-## stdout
-
-    $fh = $netdata->stdout;
-
-Holds a filehandle that will be written to. Default to STDOUT, but can be
-changed for easier testing.
-
 ## stock\_config\_dir
 
     $path = $netdata->stock_config_dir;
@@ -108,19 +110,11 @@ for more details.
 
 # METHODS
 
-## read\_config
+## start
 
-    $netdata = $netdata->read_config;
+    $bool = $netdata->start;
 
-Reads the config file and sets up ["collectors"](#collectors).
-
-## run
-
-    $netdata->run;
-
-Reads the [config](#read_config) and starts [Mojo::IOLoop](https://metacpan.org/pod/Mojo%3A%3AIOLoop) if any
-["collectors"](#collectors) got registered. Prints "DISABLE" to ["stdout"](#stdout) and returns right
-away if no collectors was set up.
+Reads the ["config"](#config) and return 1 if any ["collectors"](#collectors) got registered.
 
 # AUTHOR
 

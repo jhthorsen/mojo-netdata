@@ -71,6 +71,9 @@ L<Netdata|https://learn.netdata.cloud/docs/agent/collectors/plugins.d>. It can
 load custom L<Mojo::Netdata::Collector> classes and write data back to Netdata
 on a given interval.
 
+This module is currently EXPERIMENTAL, and the API might change without
+warning.
+
 =head1 ATTRIBUTES
 
 =head2 cache_dir
