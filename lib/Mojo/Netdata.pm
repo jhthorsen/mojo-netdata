@@ -1,23 +1,22 @@
 package Mojo::Netdata;
 use Mojo::Base -base, -signatures;
 
-use Mojo::Netdata::Util qw(logf);
 use Mojo::File qw(path);
+use Mojo::Netdata::Util qw(logf);
 
 our $VERSION = '0.01';
 
-has collectors      => sub ($self) { $self->_build_collectors };
-has config          => sub ($self) { $self->_build_config };
-has user_config_dir => sub ($self) { path $ENV{NETDATA_USER_CONFIG_DIR} || '/etc/netdata' };
-has stock_config_dir =>
-  sub ($self) { path $ENV{NETDATA_STOCK_CONFIG_DIR} || '/usr/lib/netdata/conf.d' };
-has plugins_dir  => sub ($self) { path $ENV{NETDATA_PLUGINS_DIR} || '' };
-has web_dir      => sub ($self) { path $ENV{NETDATA_WEB_DIR}     || '' };
-has cache_dir    => sub ($self) { path $ENV{NETDATA_CACHE_DIR}   || '' };
-has log_dir      => sub ($self) { path $ENV{NETDATA_LOG_DIR}     || '' };
-has host_prefix  => sub ($self) { $ENV{NETDATA_HOST_PREFIX}      || '' };
-has debug_flags  => sub ($self) { $ENV{NETDATA_DEBUG_FLAGS}      || '' };
-has update_every => sub ($self) { $ENV{NETDATA_UPDATE_EVERY}     || 1 };
+has collectors       => sub ($self) { $self->_build_collectors };
+has config           => sub ($self) { $self->_build_config };
+has user_config_dir  => sub ($self) { $ENV{NETDATA_USER_CONFIG_DIR}  || '/etc/netdata' };
+has stock_config_dir => sub ($self) { $ENV{NETDATA_STOCK_CONFIG_DIR} || '/usr/lib/netdata/conf.d' };
+has plugins_dir      => sub ($self) { $ENV{NETDATA_PLUGINS_DIR}      || '' };
+has web_dir          => sub ($self) { $ENV{NETDATA_WEB_DIR}          || '' };
+has cache_dir        => sub ($self) { $ENV{NETDATA_CACHE_DIR}        || '' };
+has log_dir          => sub ($self) { $ENV{NETDATA_LOG_DIR}          || '' };
+has host_prefix      => sub ($self) { $ENV{NETDATA_HOST_PREFIX}      || '' };
+has debug_flags      => sub ($self) { $ENV{NETDATA_DEBUG_FLAGS}      || '' };
+has update_every     => sub ($self) { $ENV{NETDATA_UPDATE_EVERY}     || 1 };
 
 sub start ($self) {
   logf(info => 'Starting %s', __PACKAGE__);
@@ -26,8 +25,20 @@ sub start ($self) {
   return int @{$self->collectors};
 }
 
-sub _build_config {
-  return {};    # TODO
+sub _build_config ($self) {
+  my $file = path($self->user_config_dir, 'mojo.conf.pl')->to_abs;
+  unless (-r $file) {
+    logf(warnings => 'Config file "%s" could not be read.', $file);
+    return {};
+  }
+
+  local $@;
+  my $config
+    = eval 'package Mojo::Netdata::Config; no warnings; use Mojo::Base -strict;' . $file->slurp;
+  return $config if $config;
+
+  logf(error => 'Config file "%s" is invalid: %s', $file, $@);
+  return {};
 }
 
 sub _build_collectors ($self) {
@@ -91,8 +102,8 @@ warning.
 
   $path = $netdata->cache_dir;
 
-Holds a L<Mojo::File> pointing to the C<NETDATA_CACHE_DIR> environment
-variable. See L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
+Holds the C<NETDATA_CACHE_DIR> environment variable. See
+L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
 for more details.
 
 =head2 config
@@ -127,24 +138,24 @@ for more details.
 
   $path = $netdata->log_dir;
 
-Holds a L<Mojo::File> pointing to the C<NETDATA_LOG_DIR> environment
-variable. See L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
+Holds the C<NETDATA_LOG_DIR> environment variable. See
+L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
 for more details.
 
 =head2 plugins_dir
 
   $path = $netdata->plugins_dir;
 
-Holds a L<Mojo::File> pointing to the C<NETDATA_PLUGINS_DIR> environment
-variable. See L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
+Holds the C<NETDATA_PLUGINS_DIR> environment variable. See
+L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
 for more details.
 
 =head2 stock_config_dir
 
   $path = $netdata->stock_config_dir;
 
-Holds a L<Mojo::File> pointing to the C<NETDATA_STOCK_CONFIG_DIR> environment
-variable. See L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
+Holds the C<NETDATA_STOCK_CONFIG_DIR> environment variable. See
+L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
 for more details.
 
 =head2 update_every
@@ -159,16 +170,16 @@ for more details.
 
   $path = $netdata->user_config_dir;
 
-Holds a L<Mojo::File> pointing to the C<NETDATA_USER_CONFIG_DIR> environment
-variable. See L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
+Holds the C<NETDATA_USER_CONFIG_DIR> environment variable. See
+L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
 for more details.
 
 =head2 web_dir
 
   $path = $netdata->web_dir;
 
-Holds a L<Mojo::File> pointing to the C<NETDATA_WEB_DIR> environment
-variable. See L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
+Holds the C<NETDATA_WEB_DIR> environment variable. See
+L<https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables>
 for more details.
 
 =head1 METHODS
