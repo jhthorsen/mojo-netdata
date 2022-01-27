@@ -39,7 +39,7 @@ sub update_p ($self) {
         return $tx;
       }
     )->then(sub ($tx) {
-      logf(info => '%s %s == %s', $tx->req->method, $tx->req->url, $tx->res->code)
+      logf(debug => '%s %s == %s', $tx->req->method, $tx->req->url, $tx->res->code)
         if $tx->res->code;
       $charts->{code}->dimension($dimension_id => {value => $tx->res->code // 0});
       $charts->{time}->dimension($dimension_id => {value => int(1000 * (time - $t0))});

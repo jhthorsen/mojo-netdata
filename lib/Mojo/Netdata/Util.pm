@@ -8,6 +8,7 @@ our @EXPORT_OK = qw(logf safe_id);
 
 sub logf ($level, $format, @args) {
   return 1 if $ENV{HARNESS_ACTIVE} and !$ENV{HARNESS_IS_VERBOSE};
+  return 1 if $level eq 'debug'    and !$ENV{NETDATA_DEBUG_FLAGS};
 
   my $module_name = caller;
   my ($s, $m, $h, $day, $month, $year) = localtime time;
