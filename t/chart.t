@@ -11,7 +11,7 @@ subtest 'basics' => sub {
   is $chart->name,           '',     'name';
   is $chart->options,        '',     'options';
   is $chart->plugin,         'mojo', 'plugin';
-  is $chart->priority,       1000,   'priority';
+  is $chart->priority,       10000,  'priority';
   is $chart->units,          '#',    'units';
   is $chart->update_every,   1,      'update_every';
 
@@ -43,7 +43,7 @@ subtest 'to_string' => sub {
     b => {algorithm => 'incremental', name => 'B', divisor => 2, multiplier => 3, options => 'x y'}
   });
   is $chart->to_string, <<'HERE', 'with dimensions';
-CHART bar.f_o_o '' 'f o o' '#' 'f o o' default line 1000 1 '' 'mojo' 'm1'
+CHART bar.f_o_o '' 'f o o' '#' 'f o o' default line 10000 1 '' 'mojo' 'm1'
 DIMENSION a 'a' absolute 1 1 ''
 DIMENSION b 'B' incremental 3 2 'x y'
 HERE

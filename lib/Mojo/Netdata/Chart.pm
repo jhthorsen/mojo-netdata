@@ -13,7 +13,7 @@ has module       => '';
 has name         => '';
 has options      => '';                                               # "detail hidden obsolete"
 has plugin       => 'mojo';
-has priority     => 1000;
+has priority     => 10000;
 has title        => sub ($self) { $self->name || $self->id };
 has type         => sub ($self) { croak '"type" cannot be built' };
 has units        => '#';
@@ -138,7 +138,7 @@ Defaults to "mojo". The default is subject to change!
 
   $int = $chart->priority;
 
-Defaults to 1000.
+Defaults to 10000.
 
 =head2 title
 
