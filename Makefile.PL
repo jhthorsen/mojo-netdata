@@ -7,7 +7,7 @@ my %WriteMakefileArgs = (
   LICENSE        => 'artistic_2',
   ABSTRACT_FROM  => 'lib/Mojo/Netdata.pm',
   VERSION_FROM   => 'lib/Mojo/Netdata.pm',
-  EXE_FILES      => [qw()],
+  EXE_FILES      => [qw(script/mojo-netdata)],
   OBJECT         => '',
   BUILD_REQUIRES => {},
   TEST_REQUIRES  => {'Test2::V0'   => '0.000144'},

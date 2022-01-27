@@ -39,7 +39,7 @@ subtest 'env' => sub {
 };
 
 subtest 'config' => sub {
-  local $ENV{NETDATA_USER_CONFIG_DIR} = curfile->sibling('etc')->to_string;
+  local $ENV{NETDATA_USER_CONFIG_DIR} = curfile->sibling('etc/netdata-test-config')->to_string;
   my $netdata = Mojo::Netdata->new;
   is $netdata->config, {collectors => []}, 'read';
 };
