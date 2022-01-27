@@ -4,13 +4,38 @@ Mojo::Netdata - https://netdata.cloud plugin for Perl
 
 # SYNOPSIS
 
-## CONFIG FILE
+## Installation
 
-TODO
+    sudo -i
+    apt install -y cpanminus
+    cpanm -n https://github.com/jhthorsen/mojo-netdata/archive/refs/heads/main.tar.gz
+    ln -s $(which mojo-netdata) /etc/netdata/custom-plugins.d/mojo-netdata.plugin
 
-## INSTALLATION
+    # See "Config file" below for information on what to place inside mojo.conf.pl
+    $EDITOR /etc/netdata/mojo.conf.pl
 
-TODO
+## Config file
+
+The config file is by default located in `/etc/netdata/mojo.conf.pl`. It is a
+plain Perl file, which means you can define variables and call functions. The
+only important part is that the last statement in the file _must_ be a
+hash-ref that looks like this:
+
+    {
+      collectors => [
+        {
+          class => '...',
+          ...
+        }
+      ],
+    }
+
+See ["SYNOPSIS" in Mojo::Netdata::Collector::HTTP](https://metacpan.org/pod/Mojo%3A%3ANetdata%3A%3ACollector%3A%3AHTTP#SYNOPSIS) for an example config file.
+
+## Log file
+
+The output from this Netdata plugin can be found in
+`/var/log/netdata/error.log`.
 
 # DESCRIPTION
 
@@ -28,8 +53,8 @@ warning.
 
     $path = $netdata->cache_dir;
 
-Holds a [Mojo::File](https://metacpan.org/pod/Mojo%3A%3AFile) pointing to the `NETDATA_CACHE_DIR` environment
-variable. See [https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables](https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables)
+Holds the `NETDATA_CACHE_DIR` environment variable. See
+[https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables](https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables)
 for more details.
 
 ## config
@@ -64,29 +89,29 @@ for more details.
 
     $path = $netdata->log_dir;
 
-Holds a [Mojo::File](https://metacpan.org/pod/Mojo%3A%3AFile) pointing to the `NETDATA_LOG_DIR` environment
-variable. See [https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables](https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables)
+Holds the `NETDATA_LOG_DIR` environment variable. See
+[https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables](https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables)
 for more details.
 
 ## plugins\_dir
 
     $path = $netdata->plugins_dir;
 
-Holds a [Mojo::File](https://metacpan.org/pod/Mojo%3A%3AFile) pointing to the `NETDATA_PLUGINS_DIR` environment
-variable. See [https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables](https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables)
+Holds the `NETDATA_PLUGINS_DIR` environment variable. See
+[https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables](https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables)
 for more details.
 
 ## stock\_config\_dir
 
     $path = $netdata->stock_config_dir;
 
-Holds a [Mojo::File](https://metacpan.org/pod/Mojo%3A%3AFile) pointing to the `NETDATA_STOCK_CONFIG_DIR` environment
-variable. See [https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables](https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables)
+Holds the `NETDATA_STOCK_CONFIG_DIR` environment variable. See
+[https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables](https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables)
 for more details.
 
 ## update\_every
 
-    $seconds = $netdata->update_every;
+    $num = $netdata->update_every;
 
 Defaults to the `NETDATA_UPDATE_EVERY` environment variable. See
 [https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables](https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables)
@@ -96,16 +121,16 @@ for more details.
 
     $path = $netdata->user_config_dir;
 
-Holds a [Mojo::File](https://metacpan.org/pod/Mojo%3A%3AFile) pointing to the `NETDATA_USER_CONFIG_DIR` environment
-variable. See [https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables](https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables)
+Holds the `NETDATA_USER_CONFIG_DIR` environment variable. See
+[https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables](https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables)
 for more details.
 
 ## web\_dir
 
     $path = $netdata->web_dir;
 
-Holds a [Mojo::File](https://metacpan.org/pod/Mojo%3A%3AFile) pointing to the `NETDATA_WEB_DIR` environment
-variable. See [https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables](https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables)
+Holds the `NETDATA_WEB_DIR` environment variable. See
+[https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables](https://learn.netdata.cloud/docs/agent/collectors/plugins.d#environment-variables)
 for more details.
 
 # METHODS

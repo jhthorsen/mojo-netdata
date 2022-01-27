@@ -77,13 +77,38 @@ Mojo::Netdata - https://netdata.cloud plugin for Perl
 
 =head1 SYNOPSIS
 
+=head2 Installation
+
+  sudo -i
+  apt install -y cpanminus
+  cpanm -n https://github.com/jhthorsen/mojo-netdata/archive/refs/heads/main.tar.gz
+  ln -s $(which mojo-netdata) /etc/netdata/custom-plugins.d/mojo-netdata.plugin
+
+  # See "Config file" below for information on what to place inside mojo.conf.pl
+  $EDITOR /etc/netdata/mojo.conf.pl
+
 =head2 Config file
+
+The config file is by default located in C</etc/netdata/mojo.conf.pl>. It is a
+plain Perl file, which means you can define variables and call functions. The
+only important part is that the last statement in the file I<must> be a
+hash-ref that looks like this:
+
+  {
+    collectors => [
+      {
+        class => '...',
+        ...
+      }
+    ],
+  }
 
 See L<Mojo::Netdata::Collector::HTTP/SYNOPSIS> for an example config file.
 
-=head2 Installation
+=head2 Log file
 
-TODO
+The output from this Netdata plugin can be found in
+C</var/log/netdata/error.log>.
 
 =head1 DESCRIPTION
 
