@@ -22,7 +22,7 @@ sub safe_id ($str) {
   $str =~ s![^A-Za-z0-9]!_!g;
   $str =~ s!_+$!!g;
   $str =~ s!^_+!!g;
-  return lc $str;
+  return $str;
 }
 
 1;

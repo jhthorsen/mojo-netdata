@@ -6,7 +6,7 @@ use Mojo::Netdata::Util qw(logf);
 use Time::HiRes qw(time);
 
 has context      => 'web';
-has type         => 'http';
+has type         => 'HTTP';
 has ua           => sub { Mojo::UserAgent->new; };
 has update_every => 30;
 has _jobs        => sub ($self) { +[] };
@@ -49,15 +49,15 @@ sub _add_jobs_for_site ($self, $url, $site) {
   $url = Mojo::URL->new($url);
   return unless my $host = $url->host;
 
-  my $group   = $site->{group}  || $site->{direct_ip} || $url =~ s!https?://!!r;
+  my $family  = $site->{family} || $site->{direct_ip} || $url =~ s!https?://!!r;
   my $method  = $site->{method} || 'GET';
   my %headers = %{$site->{headers} || {}};
   my %charts;
 
-  $charts{code} = $self->chart("${group}_code")->title("HTTP Status code for $group")->units('#')
-    ->dimension($host => {})->family($site->{direct_ip} || $host);
-  $charts{time} = $self->chart("${group}_time")->title("Response time for $group")->units('ms')
-    ->dimension($host => {})->family($site->{direct_ip} || $host);
+  $charts{code} = $self->chart("${family}_code")->title("HTTP Status code for $family")->units('#')
+    ->dimension($host => {})->family($family);
+  $charts{time} = $self->chart("${family}_time")->title("Response time for $family")->units('ms')
+    ->dimension($host => {})->family($family);
 
   my @body
     = exists $site->{json} ? (json => $site->{json})
@@ -109,9 +109,9 @@ Supported variant of L<Mojo::Netdata/config>:
             # with the "Host" headers set to the host part of "url".
             direct_ip => '192.0.2.42',
 
-            # Set "group" to group multiple domains together in one chart,
+            # Set "family" to group multiple domains together in one chart,
             # Default value is either "direct_ip" or the host part of the URL.
-            group  => 'test',
+            family => 'test',
 
             # Only one of these can be present
             json   => {...},           # JSON HTTP body

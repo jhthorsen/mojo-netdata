@@ -41,7 +41,7 @@ sub to_string ($self) {
   return '' unless %$dimensions;
 
   my $str = sprintf "CHART %s.%s %s\n", safe_id($self->type), safe_id($self->id),
-    q('name' 'title' 'units' family context chart_type priority update_every 'options' 'plugin' 'module')
+    q('name' 'title' 'units' 'family' context chart_type priority update_every 'options' 'plugin' 'module')
     =~ s!([a-z_]+)!{$self->$1}!ger;
 
   for my $id (sort keys %$dimensions) {
