@@ -7,13 +7,20 @@ subtest 'basics' => sub {
   is $collector->context,      'web',  'context';
   is $collector->type,         'HTTP', 'type';
   is $collector->update_every, 30,     'update_every';
+
+  is $collector->ua->insecure,        0, 'insecure';
+  is $collector->ua->connect_timeout, 5, 'connect_timeout';
+  is $collector->ua->request_timeout, 5, 'request_timeout';
 };
 
 subtest 'register and run' => sub {
   my $direct_ip = '93.184.216.34';
   my %config    = (
-    class => 'Mojo::Netdata::Collector::HTTP',
-    jobs  => {
+    class           => 'Mojo::Netdata::Collector::HTTP',
+    connect_timeout => 2,
+    request_timeout => 2,
+    insecure        => 1,
+    jobs            => {
       'http://nope.localhost' => {},
       'http://example.com'    => {family => 'Test Group', direct_ip => $direct_ip},
     },
@@ -24,7 +31,10 @@ subtest 'register and run' => sub {
     = Mojo::Netdata->new(stdout => $FH, update_every => 10)->config({collectors => [\%config]});
   my $collector = $netdata->collectors->[0];
   ok $collector, 'got collector';
-  is $collector->update_every, 10, 'update_every from netdata';
+  is $collector->update_every,        10, 'update_every from netdata';
+  is $collector->ua->insecure,        1,  'insecure';
+  is $collector->ua->connect_timeout, 2,  'connect_timeout';
+  is $collector->ua->request_timeout, 2,  'request_timeout';
 
   $collector->emit_charts;
   is $stdout, <<"HERE", 'charts';

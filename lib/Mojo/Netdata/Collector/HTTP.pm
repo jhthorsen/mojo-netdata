@@ -5,9 +5,9 @@ use Mojo::UserAgent;
 use Mojo::Netdata::Util qw(logf);
 use Time::HiRes qw(time);
 
-has context      => 'web';
-has type         => 'HTTP';
-has ua           => sub { Mojo::UserAgent->new; };
+has context => 'web';
+has type    => 'HTTP';
+has ua => sub { Mojo::UserAgent->new(insecure => 0, connect_timeout => 5, request_timeout => 5) };
 has update_every => 30;
 has _jobs        => sub ($self) { +[] };
 
@@ -16,7 +16,11 @@ sub register ($self, $config, $netdata) {
     : $netdata->update_every >= 10 ? $self->update_every($netdata->update_every)
     :                                $self->update_every(30);
 
+  $self->ua->insecure($config->{insecure})               if defined $config->{insecure};
+  $self->ua->connect_timeout($config->{connect_timeout}) if defined $config->{connect_timeout};
+  $self->ua->request_timeout($config->{request_timeout}) if defined $config->{request_timeout};
   $self->ua->proxy->detect;
+
   $self->_add_jobs_for_site($_ => $config->{jobs}{$_}) for sort keys %{$config->{jobs}};
   return @{$self->_jobs} ? $self : undef;
 }
@@ -95,9 +99,11 @@ Supported variant of L<Mojo::Netdata/config>:
     collectors => [
       {
         # It is possible to load this collector multiple times
-        class        => 'Mojo::Netdata::Collector::HTTP',
-        update_every => 30,
-        jobs         => {
+        class           => 'Mojo::Netdata::Collector::HTTP',
+        connect_timeout => 5, # Optional
+        request_timeout => 5, # Optional
+        update_every    => 30,
+        jobs            => {
           # The key is the URL to request
           'https://example.com' => {
 
