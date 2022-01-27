@@ -1,6 +1,7 @@
 package Mojo::Netdata;
 use Mojo::Base -base, -signatures;
 
+use IO::Handle;
 use Mojo::File qw(path);
 use Mojo::Netdata::Util qw(logf);
 
@@ -43,9 +44,10 @@ sub _build_config ($self) {
 
 sub _build_collectors ($self) {
   my $fh = $self->{stdout} // \*STDOUT;    # for testing
-  my @collectors;
+  $fh->autoflush;
 
   local $@;
+  my @collectors;
   for my $collector_config (@{$self->config->{collectors} || []}) {
     my $collector_class = $collector_config->{class};
 
@@ -59,7 +61,7 @@ sub _build_collectors ($self) {
     }
 
     next unless my $collector = $collector_class->new->register($collector_config, $self);
-    $collector->on(stdout => sub ($collector, $str) { print {$fh} $str });
+    $collector->on(stdout => sub ($collector, $str) { $fh->print($str) });
     logf(info => 'Loaded and set up %s', $collector_class);
     push @collectors, $collector;
   }
