@@ -15,10 +15,11 @@ has update_every => 1;
 
 sub chart ($self, $id) {
   return $self->charts->{$id} //= Mojo::Netdata::Chart->new(
-    context => $self->context,
-    module  => $self->module,
-    id      => $id,
-    type    => $self->type,
+    context      => $self->context,
+    module       => $self->module,
+    id           => $id,
+    type         => $self->type,
+    update_every => $self->update_every,
   );
 }
 

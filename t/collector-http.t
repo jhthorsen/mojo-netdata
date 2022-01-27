@@ -28,15 +28,15 @@ subtest 'register and run' => sub {
 
   $collector->emit_charts;
   is $stdout, <<"HERE", 'charts';
-CHART http.test_group_code '' 'HTTP Status code for Test Group' '#' $direct_ip web line 1000 1 '' 'mojo' 'mojo_netdata_collector_http'
+CHART http.test_group_code '' 'HTTP Status code for Test Group' '#' $direct_ip web line 1000 10 '' 'mojo' 'mojo_netdata_collector_http'
 DIMENSION example_com 'example.com' absolute 1 1 ''
 DIMENSION example_com_direct 'example.com direct' absolute 1 1 ''
-CHART http.test_group_time '' 'Response time for Test Group' 'ms' $direct_ip web line 1000 1 '' 'mojo' 'mojo_netdata_collector_http'
+CHART http.test_group_time '' 'Response time for Test Group' 'ms' $direct_ip web line 1000 10 '' 'mojo' 'mojo_netdata_collector_http'
 DIMENSION example_com 'example.com' absolute 1 1 ''
 DIMENSION example_com_direct 'example.com direct' absolute 1 1 ''
-CHART http.nope_localhost_code '' 'HTTP Status code for nope.localhost' '#' nope.localhost web line 1000 1 '' 'mojo' 'mojo_netdata_collector_http'
+CHART http.nope_localhost_code '' 'HTTP Status code for nope.localhost' '#' nope.localhost web line 1000 10 '' 'mojo' 'mojo_netdata_collector_http'
 DIMENSION nope_localhost 'nope.localhost' absolute 1 1 ''
-CHART http.nope_localhost_time '' 'Response time for nope.localhost' 'ms' nope.localhost web line 1000 1 '' 'mojo' 'mojo_netdata_collector_http'
+CHART http.nope_localhost_time '' 'Response time for nope.localhost' 'ms' nope.localhost web line 1000 10 '' 'mojo' 'mojo_netdata_collector_http'
 DIMENSION nope_localhost 'nope.localhost' absolute 1 1 ''
 HERE
 

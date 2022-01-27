@@ -11,13 +11,13 @@ has family       => sub ($self) { $self->id };
 has id           => sub ($self) { croak '"id" cannot be built' };
 has module       => '';
 has name         => '';
-has options      => '';                                                # "detail hidden obsolete"
+has options      => '';                                               # "detail hidden obsolete"
 has plugin       => 'mojo';
 has priority     => 1000;
 has title        => sub ($self) { $self->name || $self->id };
 has type         => sub ($self) { croak '"type" cannot be built' };
 has units        => '#';
-has update_every => sub ($self) { $ENV{NETDATA_UPDATE_EVERY} || 1 };
+has update_every => 1;
 
 sub data_to_string ($self, $microseconds = undef) {
   my $dimensions = $self->dimensions;
