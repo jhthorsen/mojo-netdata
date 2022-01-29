@@ -3,7 +3,7 @@ use Mojo::Base 'Mojo::EventEmitter', -signatures;
 
 use Carp qw(croak);
 use Mojo::Netdata::Chart;
-use Mojo::Netdata::Util qw(logf);
+use Mojo::Netdata::Util qw(logf safe_id);
 use Mojo::Promise;
 use Time::HiRes qw(time);
 
@@ -13,7 +13,8 @@ has type         => sub ($self) { croak '"type" cannot be built' };
 has update_every => 1;
 
 sub chart ($self, $id) {
-  return $self->charts->{$id} //= Mojo::Netdata::Chart->new(
+  my $key = safe_id $id;
+  return $self->charts->{$key} //= Mojo::Netdata::Chart->new(
     module       => $self->module,
     id           => $id,
     type         => $self->type,

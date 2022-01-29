@@ -1,6 +1,11 @@
 Revision history for perl distribution Mojo-Netdata
 
 0.02 Not Released
+ - Rewrote the HTTP collector
+   * Add support for custom "dimension" name
+   * Changed "jobs" into an array-ref
+   * Removed support for "direct_ip"
+   * The "Host" header can be used as default "family"
  - Improved default context() for Mojo::Netdata::Chart
    to make it easier to define alarms using "template"
  - Removed context() from Mojo::Netdata::Collector
