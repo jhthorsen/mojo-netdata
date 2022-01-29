@@ -1,4 +1,9 @@
 Revision history for perl distribution Mojo-Netdata
 
+0.02 Not Released
+ - Improved default context() for Mojo::Netdata::Chart
+   to make it easier to define alarms using "template"
+ - Removed context() from Mojo::Netdata::Collector
+
 0.01 2022-01-27T11:30:42+0900
  - Started project

@@ -4,7 +4,6 @@ use Mojo::Netdata::Collector::HTTP;
 
 subtest 'basics' => sub {
   my $collector = Mojo::Netdata::Collector::HTTP->new;
-  is $collector->context,      'web',  'context';
   is $collector->type,         'HTTP', 'type';
   is $collector->update_every, 30,     'update_every';
 
@@ -38,15 +37,15 @@ subtest 'register and run' => sub {
 
   $collector->emit_charts;
   is $stdout, <<"HERE", 'charts';
-CHART HTTP.Test_Group_code '' 'HTTP Status code for Test Group' '#' 'Test Group' web line 10000 10 '' 'mojo' 'mojo_netdata_collector_http'
+CHART HTTP.Test_Group_code '' 'HTTP Status code for Test Group' '#' 'Test Group' httpcheck.httpcode line 10000 10 '' 'mojo' 'mojo_netdata_collector_http'
 DIMENSION example_com 'example.com' absolute 1 1 ''
 DIMENSION example_com_direct 'example.com direct' absolute 1 1 ''
-CHART HTTP.Test_Group_time '' 'Response time for Test Group' 'ms' 'Test Group' web line 10000 10 '' 'mojo' 'mojo_netdata_collector_http'
+CHART HTTP.Test_Group_time '' 'Response time for Test Group' 'ms' 'Test Group' httpcheck.responsetime line 10000 10 '' 'mojo' 'mojo_netdata_collector_http'
 DIMENSION example_com 'example.com' absolute 1 1 ''
 DIMENSION example_com_direct 'example.com direct' absolute 1 1 ''
-CHART HTTP.nope_localhost_code '' 'HTTP Status code for nope.localhost' '#' 'nope.localhost' web line 10000 10 '' 'mojo' 'mojo_netdata_collector_http'
+CHART HTTP.nope_localhost_code '' 'HTTP Status code for nope.localhost' '#' 'nope.localhost' httpcheck.httpcode line 10000 10 '' 'mojo' 'mojo_netdata_collector_http'
 DIMENSION nope_localhost 'nope.localhost' absolute 1 1 ''
-CHART HTTP.nope_localhost_time '' 'Response time for nope.localhost' 'ms' 'nope.localhost' web line 10000 10 '' 'mojo' 'mojo_netdata_collector_http'
+CHART HTTP.nope_localhost_time '' 'Response time for nope.localhost' 'ms' 'nope.localhost' httpcheck.responsetime line 10000 10 '' 'mojo' 'mojo_netdata_collector_http'
 DIMENSION nope_localhost 'nope.localhost' absolute 1 1 ''
 HERE
 

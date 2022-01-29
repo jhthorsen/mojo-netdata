@@ -8,14 +8,12 @@ use Mojo::Promise;
 use Time::HiRes qw(time);
 
 has charts       => sub ($self) { +{} };
-has context      => 'default';
 has module       => sub ($self) { lc(ref $self) =~ s!\W+!_!gr };
 has type         => sub ($self) { croak '"type" cannot be built' };
 has update_every => 1;
 
 sub chart ($self, $id) {
   return $self->charts->{$id} //= Mojo::Netdata::Chart->new(
-    context      => $self->context,
     module       => $self->module,
     id           => $id,
     type         => $self->type,
@@ -62,7 +60,6 @@ Mojo::Netdata::Collector - Base class for Mojo::Netdata collectors
   package Mojo::Netdata::Collector::CoolBeans;
   use Mojo::Base 'Mojo::Netdata::Collector', -signatures;
 
-  has context => 'maybe_cool';
   has type    => 'ice_cool';
 
   sub register ($self, $config, $netdata) { ... }
@@ -81,13 +78,6 @@ by L<Mojo::Netdata> collectors. See L<Mojo::Netdata::Collector::HTTP> for an
 =head2 charts
 
   $hash_ref = $collector->charts;
-
-=head2 context
-
-  $str = $collector->context;
-
-Defaults to "default". This is used as default value for
-L<Mojo::Netdata::Chart/context>.
 
 =head2 module
 

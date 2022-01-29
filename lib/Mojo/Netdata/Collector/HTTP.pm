@@ -5,9 +5,8 @@ use Mojo::UserAgent;
 use Mojo::Netdata::Util qw(logf);
 use Time::HiRes qw(time);
 
-has context => 'web';
-has type    => 'HTTP';
-has ua => sub { Mojo::UserAgent->new(insecure => 0, connect_timeout => 5, request_timeout => 5) };
+has type => 'HTTP';
+has ua   => sub { Mojo::UserAgent->new(insecure => 0, connect_timeout => 5, request_timeout => 5) };
 has update_every => 30;
 has _jobs        => sub ($self) { +[] };
 
@@ -59,9 +58,9 @@ sub _add_jobs_for_site ($self, $url, $site) {
   my %charts;
 
   $charts{code} = $self->chart("${family}_code")->title("HTTP Status code for $family")->units('#')
-    ->dimension($host => {})->family($family);
+    ->context('httpcheck.httpcode')->dimension($host => {})->family($family);
   $charts{time} = $self->chart("${family}_time")->title("Response time for $family")->units('ms')
-    ->dimension($host => {})->family($family);
+    ->context('httpcheck.responsetime')->dimension($host => {})->family($family);
 
   my @body
     = exists $site->{json} ? (json => $site->{json})
@@ -135,12 +134,6 @@ L<Mojo::Netdata::Collector::HTTP> is a collector that can chart a web page
 response time and HTTP status codes.
 
 =head1 ATTRIBUTES
-
-=head2 context
-
-  $str = $collector->context;
-
-Defaults to "web".
 
 =head2 type
 
