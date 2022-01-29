@@ -114,10 +114,9 @@ C</var/log/netdata/error.log>.
 
 =head1 DESCRIPTION
 
-L<Mojo::Netdata> is a plugin for
-L<Netdata|https://learn.netdata.cloud/docs/agent/collectors/plugins.d>. It can
-load custom L<Mojo::Netdata::Collector> classes and write data back to Netdata
-on a given interval.
+L<Mojo::Netdata> is a plugin for L<Netdata|https://netdata.cloud>. It can load
+custom L<Mojo::Netdata::Collector> classes and write data back to Netdata on a
+given interval.
 
 This module is currently EXPERIMENTAL, and the API might change without
 warning.

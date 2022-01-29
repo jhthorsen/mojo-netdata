@@ -39,10 +39,9 @@ The output from this Netdata plugin can be found in
 
 # DESCRIPTION
 
-[Mojo::Netdata](https://metacpan.org/pod/Mojo%3A%3ANetdata) is a plugin for
-[Netdata](https://learn.netdata.cloud/docs/agent/collectors/plugins.d). It can
-load custom [Mojo::Netdata::Collector](https://metacpan.org/pod/Mojo%3A%3ANetdata%3A%3ACollector) classes and write data back to Netdata
-on a given interval.
+[Mojo::Netdata](https://metacpan.org/pod/Mojo%3A%3ANetdata) is a plugin for [Netdata](https://netdata.cloud). It can load
+custom [Mojo::Netdata::Collector](https://metacpan.org/pod/Mojo%3A%3ANetdata%3A%3ACollector) classes and write data back to Netdata on a
+given interval.
 
 This module is currently EXPERIMENTAL, and the API might change without
 warning.
