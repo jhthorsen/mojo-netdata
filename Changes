@@ -1,6 +1,6 @@
 Revision history for perl distribution Mojo-Netdata
 
-0.02 Not Released
+0.02 2022-01-30T17:56:13+0900
  - Add support for reading config from /etc/netdata/mojo.conf.d/
  - Renamed "class" key with "collector"
  - Rewrote the HTTP collector

@@ -14,20 +14,29 @@ Mojo::Netdata - https://netdata.cloud plugin for Perl
     # See "Config file" below for information on what to place inside mojo.conf.pl
     $EDITOR /etc/netdata/mojo.conf.pl
 
-## Config file
+## Config files
 
-The config file is by default located in `/etc/netdata/mojo.conf.pl`. It is a
-plain Perl file, which means you can define variables and call functions. The
-only important part is that the last statement in the file _must_ be a
-hash-ref that looks like this:
+The config files are located in `/etc/netdata/mojo.conf.d`. The files are
+plain Perl files, which means you can define variables and call functions. The
+only important part is that the last statement in the file is a hash-ref.
+
+Any hash-refs that has the "collector" key will be placed into ["collectors"](#collectors),
+while everything else will be merged into ["config"](#config). Example:
+
+    # /etc/netdata/mojo.conf.d/foo.conf.pl
+    {foo => 42, bar => 100}
+
+    # /etc/netdata/mojo.conf.d/bar.conf.pl
+    {collector => 'Mojo::Netdata::Collector::HTTP', jobs => []}
+
+The two config files above will result in this ["config"](#config):
 
     {
+      foo => 42,
+      bar => 100,
       collectors => [
-        {
-          class => '...',
-          ...
-        }
-      ],
+        {collector => 'Mojo::Netdata::Collector::HTTP', jobs => []},
+      },
     }
 
 See ["SYNOPSIS" in Mojo::Netdata::Collector::HTTP](https://metacpan.org/pod/Mojo%3A%3ANetdata%3A%3ACollector%3A%3AHTTP#SYNOPSIS) for an example config file.
