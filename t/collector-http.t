@@ -14,8 +14,8 @@ subtest 'basics' => sub {
 
 subtest 'register' => sub {
   my %config = (
-    class => 'Mojo::Netdata::Collector::HTTP',
-    jobs  => [
+    collector => 'Mojo::Netdata::Collector::HTTP',
+    jobs      => [
       "http://nope.localhost",
       "/ignored"                => {},
       "http://b.localhost",     => {body   => 'foo', dimension => 'body', method => 'POST'},
@@ -53,13 +53,13 @@ subtest 'register' => sub {
   is $chart->dimension('example.com')->{value}, 301, 'code dimension got updated';
 
   $chart = $collector->chart('F1_time');
-  is $chart->dimension('example.com')->{value}, within(500, 490),
+  is $chart->dimension('example.com')->{value}, within(500, 500),
     'responsetime dimension got updated';
 };
 
 subtest 'register and run' => sub {
   my %config = (
-    class           => 'Mojo::Netdata::Collector::HTTP',
+    collector       => 'Mojo::Netdata::Collector::HTTP',
     connect_timeout => 2,
     request_timeout => 2,
     insecure        => 1,

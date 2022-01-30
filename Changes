@@ -1,6 +1,8 @@
 Revision history for perl distribution Mojo-Netdata
 
 0.02 Not Released
+ - Add support for reading config from /etc/netdata/mojo.conf.d/
+ - Renamed "class" key with "collector"
  - Rewrote the HTTP collector
    * Add support for custom "dimension" name
    * Changed "jobs" into an array-ref

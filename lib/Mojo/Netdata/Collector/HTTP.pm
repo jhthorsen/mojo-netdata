@@ -100,50 +100,49 @@ Mojo::Netdata::Collector::HTTP - A website monitorer for Mojo::Netdata
 
 =head2 Config
 
-Supported variant of L<Mojo::Netdata/config>:
+Below is an example C</etc/netdata/mojo.conf.d/http.conf.pl> config file. Note
+that the file can have any name and you have have as many as you want, as long
+as it has the C<.conf.pl> extension.
 
   {
-    collectors => [
-      {
-        # Required
-        class => 'Mojo::Netdata::Collector::HTTP',
+    # Required
+    collector => 'Mojo::Netdata::Collector::HTTP',
 
-        insecure        => 0,  # Set to "1" to allow insecure SSL/TLS connections
-        connect_timeout => 5,  # Max time for the connection to be established
-        request_timeout => 5,  # Max time for the whole request to complete
-        proxy           => 1,  # Set to "0" to disable proxy auto-detect
-        update_every    => 30, # How often to run the "jobs" below
+    # Optional
+    insecure        => 0,  # Set to "1" to allow insecure SSL/TLS connections
+    connect_timeout => 5,  # Max time for the connection to be established
+    request_timeout => 5,  # Max time for the whole request to complete
+    proxy           => 1,  # Set to "0" to disable proxy auto-detect
+    update_every    => 30, # How often to run the "jobs" below
 
-        List of URLs and an optional config hash (object)
-        jobs => [
+    # Required - List of URLs and an optional config hash (object)
+    jobs => [
 
-          # List of URLs to check (Config is optional)
-          'https://superwoman.example.com',
-          'https://superman.example.com',
+      # List of URLs to check (Config is optional)
+      'https://superwoman.example.com',
+      'https://superman.example.com',
 
-          # URL and config parameters
-          'https://example.com' => {
+      # URL and config parameters
+      'https://example.com' => {
 
-            method => 'GET',               # GET (Default), HEAD, POST, ...
-            headers => {'X-Foo' => 'bar'}, # HTTP headers
+        method => 'GET',               # GET (Default), HEAD, POST, ...
+        headers => {'X-Foo' => 'bar'}, # HTTP headers
 
-            # Set "dimension" to get a custom label in the chart.
-            # Default to the "Host" header or the host part of the URL.
-            dimension => 'foo', # Default: "example.com"
+        # Set "dimension" to get a custom label in the chart.
+        # Default to the "Host" header or the host part of the URL.
+        dimension => 'foo', # Default: "example.com"
 
-            # Set "family" to group multiple domains together in one chart,
-            # Default to the "Host" header or the host part of the URL.
-            family => 'bar', # Default: "example.com"
+        # Set "family" to group multiple domains together in one chart,
+        # Default to the "Host" header or the host part of the URL.
+        family => 'bar', # Default: "example.com"
 
-            # Only one of these can be present
-            json   => {...},           # JSON HTTP body
-            form   => {key => $value}, # Form data
-            body   => '...',           # Raw HTTP body
-          },
-        ],
+        # Only one of these can be present
+        json   => {...},           # JSON HTTP body
+        form   => {key => $value}, # Form data
+        body   => '...',           # Raw HTTP body
       },
     ],
-  }
+  };
 
 =head2 Health
 
