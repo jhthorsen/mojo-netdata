@@ -37,12 +37,9 @@ sub update_p ($self) {
   for my $job (@{$self->jobs}) {
     my $tx = $ua->build_tx(@{$job->[0]});
     push @p, $ua->start_p($tx)->then(sub ($tx) {
-      my $t1 = time;
-      logf(debug => '%s %s == %s', $tx->req->method, $tx->req->url, $tx->res->code);
       $job->[1]->($tx, $t0);
     })->catch(sub ($err) {
-      logf(warnings => '%s %s == %s', $tx->req->method, $tx->req->url, $err);
-      $job->[1]->($tx, $t0);
+      $job->[1]->($tx, $t0, {message => $err});
     });
   }
 
@@ -73,9 +70,15 @@ sub _make_job ($self, $url, $params, $defaults) {
   $code_chart->dimension($dimension => {});
   $time_chart->dimension($dimension => {});
 
-  my $update = sub ($tx, $t0) {
+  my $update = sub ($tx, $t0, $err = undef) {
+    $err ||= $tx->error;
+    my $req  = $tx->req;
+    my $code = $tx->res->code // 0;
+    my @msg  = ($req->method, $req->url, $err || {code => $code}, $req->headers->to_hash(1));
+    logf(($err ? 'warnings' : 'debug'), '%s %s == %s %s', @msg);
+
     $time_chart->dimension($dimension => {value => int(1000 * (time - $t0))});
-    $code_chart->dimension($dimension => {value => $tx->res->code // 0});
+    $code_chart->dimension($dimension => {value => $code});
   };
 
   my @data;
