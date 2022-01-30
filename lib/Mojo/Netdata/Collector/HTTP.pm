@@ -98,6 +98,8 @@ Mojo::Netdata::Collector::HTTP - A website monitorer for Mojo::Netdata
 
 =head1 SYNOPSIS
 
+=head2 Config
+
 Supported variant of L<Mojo::Netdata/config>:
 
   {
@@ -142,6 +144,34 @@ Supported variant of L<Mojo::Netdata/config>:
       },
     ],
   }
+
+=head2 Health
+
+Here is an example C</etc/netdata/health.d/mojo-http.conf> file:
+
+   template: web_server_code
+         on: httpcheck.code
+      class: Errors
+       type: Web Server
+  component: HTTP endpoint
+     plugin: mojo
+     lookup: max -5m absolute foreach *
+      every: 1m
+       warn: $this >= 300 && $this < 500
+       crit: $this >= 500 && $this != 503
+         to: webmaster
+
+   template: web_server_up
+         on: httpcheck.code
+      class: Errors
+       type: Web Server
+  component: HTTP endpoint
+     plugin: mojo
+     lookup: min -5m absolute foreach *
+      every: 1m
+       crit: $this == 0
+      units: up/down
+         to: webmaster
 
 =head1 DESCRIPTION
 
