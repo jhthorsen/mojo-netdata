@@ -27,19 +27,28 @@ subtest 'register' => sub {
     ],
   );
 
-  my $netdata   = Mojo::Netdata->new(update_every => 10)->config({collectors => [\%config]});
+  my %with_defaults = (
+    collector => 'Mojo::Netdata::Collector::HTTP',
+    headers   => {X => 42},
+    family    => 'D1',
+    jobs      =>
+      ['https://d1.localhost', 'https://r1.localhost' => {family => 'R1', headers => {Y => 0}}],
+  );
+
+  my $netdata
+    = Mojo::Netdata->new(update_every => 10)->config({collectors => [\%config, \%with_defaults]});
   my $collector = $netdata->collectors->[0];
   ok $collector, 'got collector';
 
   is(
     $collector->jobs,
     [
-      [[GET => 'http://nope.localhost'],                         D()],
-      [[POST => 'http://b.localhost', 'foo'],                    D()],
-      [[GET => 'http://f.localhost', 'form', {foo => 'bar'}],    D()],
-      [[GET => 'http://j.localhost', 'json', {foo => 'bar'}],    D()],
-      [[GET => 'http://93.184.216.34', {Host => 'example.com'}], D()],
-      [[GET => 'http://example.com/test'],                       D()],
+      [[GET => 'http://nope.localhost', {}],                       D()],
+      [[POST => 'http://b.localhost', {}, 'foo'],                  D()],
+      [[GET => 'http://f.localhost', {}, 'form', {foo => 'bar'}],  D()],
+      [[GET => 'http://j.localhost', {}, 'json', {foo => 'bar'}],  D()],
+      [[GET => 'http://93.184.216.34', {Host => ['example.com']}], D()],
+      [[GET => 'http://example.com/test', {}],                     D()],
     ],
     'jobs',
   );
@@ -55,6 +64,19 @@ subtest 'register' => sub {
   $chart = $collector->chart('F1_time');
   is $chart->dimension('example.com')->{value}, within(500, 500),
     'responsetime dimension got updated';
+
+  $collector = $netdata->collectors->[1];
+  is(
+    $collector->jobs,
+    [
+      [[GET => 'https://d1.localhost', {X => [42]}],           D()],
+      [[GET => 'https://r1.localhost', {X => [42], Y => [0]}], D()],
+    ],
+    'jobs with defaults',
+  );
+
+  ok $collector->chart('D1_code')->dimension('d1.localhost'), 'using default family';
+  ok $collector->chart('R1_code')->dimension('r1.localhost'), 'override default family';
 };
 
 subtest 'register and run' => sub {

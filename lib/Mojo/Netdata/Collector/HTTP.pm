@@ -23,7 +23,7 @@ sub register ($self, $config, $netdata) {
 
   my @jobs = ref $config->{jobs} eq 'HASH' ? %{$config->{jobs}} : @{$config->{jobs}};
   while (my $url = shift @jobs) {
-    my $job = $self->_make_job($url => ref $jobs[0] eq 'HASH' ? shift @jobs : {});
+    my $job = $self->_make_job($url => ref $jobs[0] eq 'HASH' ? shift @jobs : {}, $config);
     push @{$self->jobs}, $job if $job;
   }
 
@@ -49,13 +49,15 @@ sub update_p ($self) {
   return Mojo::Promise->all(@p);
 }
 
-sub _make_job ($self, $url, $params) {
+sub _make_job ($self, $url, $params, $defaults) {
   $url = Mojo::URL->new($url);
   return undef unless my $host = $url->host;
 
-  my $headers   = Mojo::Headers->new->from_hash($params->{headers} || {});
+  my $headers = Mojo::Headers->new->from_hash($defaults->{headers} || {});
+  $headers->header($_ => $params->{headers}{$_}) for keys %{$params->{headers} || {}};
+
   my $dimension = $params->{dimension} || $headers->host || $url->host;
-  my $family    = $params->{family}    || $headers->host || $url->host;
+  my $family    = $params->{family}    || $defaults->{family} || $headers->host || $url->host;
 
   my $code_chart = $self->chart("${family}_code")->title("HTTP Status code for $family")
     ->context('httpcheck.code')->family($family)->units('#');
@@ -77,7 +79,7 @@ sub _make_job ($self, $url, $params) {
   };
 
   my @data;
-  push @data, $params->{headers} if $params->{headers};
+  push @data, $headers->to_hash(1);
   push @data,
       exists $params->{json} ? (json => $params->{json})
     : exists $params->{form} ? (form => $params->{form})
@@ -114,6 +116,10 @@ as it has the C<.conf.pl> extension.
     request_timeout => 5,  # Max time for the whole request to complete
     proxy           => 1,  # Set to "0" to disable proxy auto-detect
     update_every    => 30, # How often to run the "jobs" below
+
+    # Default values, unless defined in the job
+    family  => 'default-family-name',
+    headers => {'X-Merged-With' => 'headers inside job config'},
 
     # Required - List of URLs and an optional config hash (object)
     jobs => [
