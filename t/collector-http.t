@@ -86,12 +86,12 @@ subtest 'register and run' => sub {
 CHART HTTP.Test_Group_code '' 'HTTP Status code for Test Group' '#' 'Test Group' httpcheck.code line 10000 10 '' 'mojo' 'mojo_netdata_collector_http'
 DIMENSION direct 'direct' absolute 1 1 ''
 DIMENSION example_com 'example.com' absolute 1 1 ''
-CHART HTTP.Test_Group_time '' 'Response time for Test Group' '#' 'Test Group' httpcheck.responsetime line 10000 10 '' 'mojo' 'mojo_netdata_collector_http'
+CHART HTTP.Test_Group_time '' 'Response time for Test Group' 'ms' 'Test Group' httpcheck.responsetime line 10000 10 '' 'mojo' 'mojo_netdata_collector_http'
 DIMENSION direct 'direct' absolute 1 1 ''
 DIMENSION example_com 'example.com' absolute 1 1 ''
 CHART HTTP.nope_localhost_code '' 'HTTP Status code for nope.localhost' '#' 'nope.localhost' httpcheck.code line 10000 10 '' 'mojo' 'mojo_netdata_collector_http'
 DIMENSION nope_localhost 'nope.localhost' absolute 1 1 ''
-CHART HTTP.nope_localhost_time '' 'Response time for nope.localhost' '#' 'nope.localhost' httpcheck.responsetime line 10000 10 '' 'mojo' 'mojo_netdata_collector_http'
+CHART HTTP.nope_localhost_time '' 'Response time for nope.localhost' 'ms' 'nope.localhost' httpcheck.responsetime line 10000 10 '' 'mojo' 'mojo_netdata_collector_http'
 DIMENSION nope_localhost 'nope.localhost' absolute 1 1 ''
 HERE
 

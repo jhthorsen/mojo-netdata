@@ -66,7 +66,7 @@ sub _make_job ($self, $url, $params) {
   }
 
   my $time_chart = $self->chart("${family}_time")->title("Response time for $family")
-    ->context('httpcheck.responsetime')->family($family)->units('#');
+    ->context('httpcheck.responsetime')->family($family)->units('ms');
 
   $code_chart->dimension($dimension => {});
   $time_chart->dimension($dimension => {});
