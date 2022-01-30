@@ -13,4 +13,7 @@ Revision history for perl distribution Mojo-Netdata
  - Removed context() from Mojo::Netdata::Collector
 
 0.01 2022-01-27T11:30:42+0900
- - Started project
+ - Add Mojo::Netdata
+ - Add Mojo::Netdata::Chart
+ - Add Mojo::Netdata::Collector
+ - Add Mojo::Netdata::Collector::HTTP
