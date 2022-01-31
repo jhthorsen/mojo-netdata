@@ -81,6 +81,8 @@ subtest 'register' => sub {
 };
 
 subtest 'register and run' => sub {
+  plan skip_all => 'TEST_ONLINE=1' unless $ENV{TEST_ALL} or $ENV{TEST_ONLINE};
+
   my %config = (
     collector       => 'Mojo::Netdata::Collector::HTTP',
     connect_timeout => 2,
