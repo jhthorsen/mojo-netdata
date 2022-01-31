@@ -21,7 +21,7 @@ subtest 'register' => sub {
       "http://b.localhost",     => {body   => 'foo', dimension => 'body', method => 'POST'},
       "http://f.localhost",     => {form   => {foo => 'bar'}},
       "http://j.localhost",     => {json   => {foo => 'bar'}},
-      "http://93.184.216.34"    => {family => 'F1', headers => {Host => 'example.com'}},
+      "http://example.com"      => {family => 'F1', via => '93.184.216.34'},
       "http://example.com"      => {family => 'F1'},
       "http://example.com/test" => {family => 'F1', dimension => 'test'},
     ],

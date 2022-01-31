@@ -56,6 +56,7 @@ sub _make_job ($self, $url, $params, $defaults) {
 
   my $headers = Mojo::Headers->new->from_hash($defaults->{headers} || {});
   $headers->header($_ => $params->{headers}{$_}) for keys %{$params->{headers} || {}};
+  ($headers->header(Host => $url->host), $url->host($params->{via})) if $params->{via};
 
   my $dimension = $params->{dimension} || $headers->host || $url->host;
   my $family    = $params->{family}    || $defaults->{family} || $headers->host || $url->host;
@@ -138,9 +139,11 @@ as it has the C<.conf.pl> extension.
 
       # URL and config parameters
       'https://example.com' => {
-
-        method => 'GET',               # GET (Default), HEAD, POST, ...
+        method  => 'GET',              # GET (Default), HEAD, POST, ...
         headers => {'X-Foo' => 'bar'}, # HTTP headers
+
+        # Replace "host" in the URL with this IP and set the "Host" header
+        via => '192.168.2.1',
 
         # Set "dimension" to get a custom label in the chart.
         # Default to the "Host" header or the host part of the URL.
