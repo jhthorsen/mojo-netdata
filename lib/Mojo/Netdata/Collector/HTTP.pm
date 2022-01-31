@@ -94,7 +94,6 @@ sub _make_job ($self, $url, $params, $defaults) {
     : exists $params->{body} ? ($params->{body})
     :                          ();
 
-  logf(info => 'Tracking %s', $url);
   return [[$params->{method} || 'GET', $url->to_unsafe_string, @data], $update];
 }
 
