@@ -57,6 +57,7 @@ subtest 'register' => sub {
   my $chart = $collector->chart('F1_code');
   my $tx    = Mojo::Transaction::HTTP->new;
   is $chart->dimension('example.com')->{value}, undef, 'dimension has no value';
+  $tx->req->url->host('test.com');
   $tx->res->code(301);
   $_->[1]->($tx, $t1) for @{$collector->jobs};
   is $chart->dimension('example.com')->{value}, 301, 'code dimension got updated';

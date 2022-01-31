@@ -80,7 +80,7 @@ sub _make_job ($self, $url, $params, $defaults) {
     my $req  = $tx->req;
     my $code = $tx->res->code // 0;
     my @msg  = ($req->method, $req->url, $err || {code => $code}, $req->headers->to_hash(1));
-    logf(($err ? 'warnings' : 'debug'), '%s %s == %s %s', @msg);
+    logf(($code >= 200 && $code < 300 ? 'debug' : 'warnings'), '%s %s == %s %s', @msg);
 
     $time_chart->dimension($dimension => {value => int(1000 * (time - $t0))});
     $code_chart->dimension($dimension => {value => $code});
@@ -94,7 +94,9 @@ sub _make_job ($self, $url, $params, $defaults) {
     : exists $params->{body} ? ($params->{body})
     :                          ();
 
-  return [[$params->{method} || 'GET', $url->to_unsafe_string, @data], $update];
+  my $http_method = $params->{method} || 'GET';
+  logf(debug => 'Tracking %s %s %s', $http_method, $url, $data[0]);
+  return [[$http_method, $url->to_unsafe_string, @data], $update];
 }
 
 1;
