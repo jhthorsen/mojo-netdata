@@ -5,7 +5,7 @@ use IO::Handle;
 use Mojo::File qw(path);
 use Mojo::Netdata::Util qw(logf);
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 has collectors       => sub ($self) { $self->_build_collectors };
 has config           => sub ($self) { $self->_build_config };

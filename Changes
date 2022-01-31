@@ -1,6 +1,6 @@
 Revision history for perl distribution Mojo-Netdata
 
-0.03 Not Released
+0.03 2022-01-31T11:34:51+0900
  - Add support for custom "user_agent" name
  - Add support for "via" in the HTTP collector config
  - Logging more details on failed HTTP request
