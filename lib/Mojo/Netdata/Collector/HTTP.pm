@@ -5,6 +5,9 @@ use Mojo::UserAgent;
 use Mojo::Netdata::Util qw(logf safe_id);
 use Time::HiRes qw(time);
 
+require Mojo::Netdata;
+our $VERSION = $Mojo::Netdata::VERSION;
+
 has jobs => sub ($self) { +[] };
 has type => 'HTTP';
 has ua   => sub { Mojo::UserAgent->new(insecure => 0, connect_timeout => 5, request_timeout => 5) };
@@ -19,6 +22,7 @@ sub register ($self, $config, $netdata) {
   $self->ua->connect_timeout($config->{connect_timeout}) if defined $config->{connect_timeout};
   $self->ua->request_timeout($config->{request_timeout}) if defined $config->{request_timeout};
   $self->ua->proxy->detect                               if $config->{proxy} // 1;
+  $self->ua->transactor->name($config->{user_agent} || "Mojo-Netdata/$VERSION (Perl)");
   $self->jobs([]);
 
   my @jobs = ref $config->{jobs} eq 'HASH' ? %{$config->{jobs}} : @{$config->{jobs}};
@@ -114,11 +118,12 @@ as it has the C<.conf.pl> extension.
     collector => 'Mojo::Netdata::Collector::HTTP',
 
     # Optional
-    insecure        => 0,  # Set to "1" to allow insecure SSL/TLS connections
-    connect_timeout => 5,  # Max time for the connection to be established
-    request_timeout => 5,  # Max time for the whole request to complete
-    proxy           => 1,  # Set to "0" to disable proxy auto-detect
-    update_every    => 30, # How often to run the "jobs" below
+    insecure        => 0,     # Set to "1" to allow insecure SSL/TLS connections
+    connect_timeout => 5,     # Max time for the connection to be established
+    request_timeout => 5,     # Max time for the whole request to complete
+    proxy           => 1,     # Set to "0" to disable proxy auto-detect
+    update_every    => 30,    # How often to run the "jobs" below
+    user_agent      => '...', # Custom User-Agent name
 
     # Default values, unless defined in the job
     family  => 'default-family-name',

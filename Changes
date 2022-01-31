@@ -1,8 +1,9 @@
 Revision history for perl distribution Mojo-Netdata
 
 0.03 Not Released
- - Changed logf() to serialize references
+ - Add support for custom "user_agent" name
  - Logging more details on failed HTTP request
+ - Changed logf() to serialize references
 
 0.02 2022-01-30T17:56:13+0900
  - Add support for reading config from /etc/netdata/mojo.conf.d/
