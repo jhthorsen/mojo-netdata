@@ -58,8 +58,9 @@ sub _make_job ($self, $url, $params, $defaults) {
   $headers->header($_ => $params->{headers}{$_}) for keys %{$params->{headers} || {}};
   ($headers->header(Host => $url->host), $url->host($params->{via})) if $params->{via};
 
-  my $dimension = $params->{dimension} || $headers->host || $url->host;
-  my $family    = $params->{family}    || $defaults->{family} || $headers->host || $url->host;
+  my $dimension = $params->{dimension}   || $headers->host || $url->host;
+  my $family    = $params->{family}      || $defaults->{family} || $headers->host || $url->host;
+  my $log_level = $defaults->{log_level} || 'debug';
 
   my $code_chart = $self->chart("${family}_code")->title("HTTP Status code for $family")
     ->context('httpcheck.code')->family($family)->units('#');
@@ -80,7 +81,7 @@ sub _make_job ($self, $url, $params, $defaults) {
     my $req  = $tx->req;
     my $code = $tx->res->code // 0;
     my @msg  = ($req->method, $req->url, $err || {code => $code}, $req->headers->to_hash(1));
-    logf(($code >= 200 && $code < 300 ? 'debug' : 'warnings'), '%s %s == %s %s', @msg);
+    logf(($code >= 200 && $code < 300 ? $log_level : 'warnings'), '%s %s == %s %s', @msg);
 
     $time_chart->dimension($dimension => {value => int(1000 * (time - $t0))});
     $code_chart->dimension($dimension => {value => $code});
