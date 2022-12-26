@@ -110,7 +110,7 @@ sub _make_job ($self, $url, $params, $defaults) {
 
 =head1 NAME
 
-Mojo::Netdata::Collector::HTTP - A website monitorer for Mojo::Netdata
+Mojo::Netdata::Collector::HTTP - A website collector for Mojo::Netdata
 
 =head1 SYNOPSIS
 
