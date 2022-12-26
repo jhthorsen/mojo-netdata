@@ -3,14 +3,15 @@ use Mojo::Base 'Mojo::Netdata::Collector', -signatures;
 
 use Mojo::UserAgent;
 use Mojo::Netdata::Util qw(logf safe_id);
-use Time::HiRes qw(time);
+use Time::HiRes         qw(time);
 
 require Mojo::Netdata;
 our $VERSION = $Mojo::Netdata::VERSION;
 
-has jobs => sub ($self) { +[] };
-has type => 'HTTP';
-has ua   => sub { Mojo::UserAgent->new(insecure => 0, connect_timeout => 5, request_timeout => 5) };
+has concurrency => 4;
+has jobs        => sub ($self) { +[] };
+has type        => 'HTTP';
+has ua => sub { Mojo::UserAgent->new(insecure => 0, connect_timeout => 5, request_timeout => 5) };
 has update_every => 30;
 
 sub register ($self, $config, $netdata) {
@@ -23,6 +24,7 @@ sub register ($self, $config, $netdata) {
   $self->ua->request_timeout($config->{request_timeout}) if defined $config->{request_timeout};
   $self->ua->proxy->detect                               if $config->{proxy} // 1;
   $self->ua->transactor->name($config->{user_agent} || "Mojo-Netdata/$VERSION (Perl)");
+  $self->concurrency($config->{concurrency} || 4);
   $self->jobs([]);
 
   my @jobs = ref $config->{jobs} eq 'HASH' ? %{$config->{jobs}} : @{$config->{jobs}};
@@ -37,17 +39,19 @@ sub register ($self, $config, $netdata) {
 sub update_p ($self) {
   my ($ua, @p) = ($self->ua);
 
-  my $t0 = time;
-  for my $job (@{$self->jobs}) {
-    my $tx = $ua->build_tx(@{$job->[0]});
-    push @p, $ua->start_p($tx)->then(sub ($tx) {
-      $job->[1]->($tx, $t0);
-    })->catch(sub ($err) {
-      $job->[1]->($tx, $t0, {message => $err});
-    });
-  }
-
-  return Mojo::Promise->all(@p);
+  return Mojo::Promise->map(
+    {concurrency => $self->concurrency},
+    sub {
+      my ($job, $t0) = ($_, time);
+      my $tx = $ua->build_tx(@{$job->[0]});
+      return $ua->start_p($tx)->then(sub ($tx) {
+        $job->[1]->($tx, $t0);
+      })->catch(sub ($err) {
+        $job->[1]->($tx, $t0, {message => $err});
+      });
+    },
+    @{$self->jobs}
+  );
 }
 
 sub _make_job ($self, $url, $params, $defaults) {
