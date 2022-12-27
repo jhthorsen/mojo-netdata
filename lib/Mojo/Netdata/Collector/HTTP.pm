@@ -6,7 +6,7 @@ use Mojo::Netdata::Util qw(logf safe_id);
 use Time::HiRes         qw(time);
 
 require Mojo::Netdata;
-our $VERSION = $Mojo::Netdata::VERSION;
+our $VERSION = '0.04';
 
 has concurrency => 4;
 has jobs        => sub ($self) { +[] };

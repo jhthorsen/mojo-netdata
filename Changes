@@ -1,6 +1,6 @@
 Revision history for perl distribution Mojo-Netdata
 
-0.04 Not Released
+0.04 2022-12-27T09:07:19
  - Add support for NETDATA_DEBUG=1 to avoid logging too much
  - Add support for "concurrency" in Collector::HTTP
 
